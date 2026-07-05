@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFetch } from '../hooks/usePolling';
-import { projectsApi, queuesApi, retryPoliciesApi, type Project, type Queue } from '../api/client';
+import { projectsApi, queuesApi, type Project, type Queue } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 export default function Projects() {

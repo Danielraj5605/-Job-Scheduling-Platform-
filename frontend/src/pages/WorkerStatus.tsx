@@ -111,7 +111,7 @@ function WorkerCard({ worker }: { worker: Worker }) {
               <YAxis hide allowDecimals={false} />
               <Tooltip
                 contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.75rem' }}
-                formatter={(v: number) => [v, 'Active jobs']}
+                formatter={(v: any) => [v, 'Active jobs']}
                 labelFormatter={() => ''}
               />
               <Area

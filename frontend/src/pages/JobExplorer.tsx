@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useFetch, usePolling } from '../hooks/usePolling';
-import { jobsApi, queuesApi, projectsApi, type Job, type Queue, type Project } from '../api/client';
+import { jobsApi, queuesApi, projectsApi, type Job, type Queue } from '../api/client';
 import StatusBadge from '../components/StatusBadge';
 
 const STATUSES = ['queued', 'scheduled', 'claimed', 'running', 'completed', 'failed', 'dead_letter'];

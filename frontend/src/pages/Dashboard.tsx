@@ -99,7 +99,7 @@ export default function Dashboard() {
                   fontSize: '0.875rem',
                 }}
                 labelFormatter={formatTime}
-                formatter={(v: number) => [v, 'Completed']}
+                formatter={(v: any) => [v, 'Completed']}
               />
               <Area
                 type="monotone"
