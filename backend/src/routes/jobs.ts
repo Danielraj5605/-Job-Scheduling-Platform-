@@ -1,11 +1,33 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import { prisma } from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 
 const router = Router();
 router.use(authenticate);
+
+// ─── Rate limiter — POST /queues/:queueId/jobs only ──────────────────────────
+// 100 submissions per minute per authenticated user (in-memory, no Redis needed)
+const jobSubmissionLimiter = rateLimit({
+  windowMs: 60 * 1000,          // 1 minute
+  max: 100,                      // max 100 requests per window
+  keyGenerator: (req) => {
+    // Key by user ID so each user gets their own independent counter
+    return (req as AuthRequest).user?.id ?? req.ip ?? 'anon';
+  },
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: {
+        code: 'RATE_LIMITED',
+        message: 'Too many job submissions. Max 100 per minute per user — try again shortly.',
+      },
+    });
+  },
+  standardHeaders: true,   // Return RateLimit-* headers
+  legacyHeaders: false,
+});
 
 // ─── POST /queues/:queueId/jobs ──────────────────────────────────────────────
 const submitJobSchema = z.object({
@@ -22,7 +44,7 @@ const submitJobSchema = z.object({
   priority: z.number().int().optional().default(0),
 });
 
-router.post('/queues/:queueId/jobs', validate(submitJobSchema), async (req: AuthRequest, res: Response) => {
+router.post('/queues/:queueId/jobs', jobSubmissionLimiter, validate(submitJobSchema), async (req: AuthRequest, res: Response) => {
   const { type, payload, run_at, cron_expression, jobs: batchJobs, idempotency_key, retry_policy_id, priority } = req.body;
   const { queueId } = req.params;
 
