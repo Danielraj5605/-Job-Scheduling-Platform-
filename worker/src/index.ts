@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import os from 'os';
+import http from 'http';
 import { prisma } from './lib/prisma';
 import { pollQueue } from './poller';
 import { startHeartbeat } from './heartbeat';
@@ -13,6 +14,15 @@ async function main(): Promise<void> {
   console.log(`   Host: ${os.hostname()}`);
   console.log(`   Concurrency: ${WORKER_CONCURRENCY}`);
   console.log(`   Poll interval: ${POLL_INTERVAL_MS}ms`);
+
+  // Dummy HTTP server for Render free tier (Render requires web services to bind to a port)
+  const port = process.env.PORT || 10001;
+  http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('Worker is running');
+  }).listen(port, () => {
+    console.log(`🌐 Dummy healthcheck server running on port ${port}`);
+  });
 
   // Register this worker instance
   const worker = await prisma.worker.create({
